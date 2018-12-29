@@ -27,9 +27,11 @@ class HomePageState extends State<HomePage> {
     // TODO: implement initState
     super.initState();
     listOfRegisteredUsers();
+    listOfSharedUsers();
   }
 
   final List<String> registeredUsersEmail = [];
+  String sharedUsersEmail;
   String _enteredEmail;
   bool _isSharedListCreated = false;
 
@@ -46,9 +48,27 @@ class HomePageState extends State<HomePage> {
     return snapshots;
   }
 
+  Stream<QuerySnapshot> listOfSharedUsers() {
+    Stream<QuerySnapshot> snapshots =
+        Firestore.instance.collection(widget.user.email + '_shared').snapshots();
+    snapshots.listen((data) {
+      data.documents.forEach((doc) {
+        setState(() {
+          this.sharedUsersEmail = (doc['email']);
+        });
+      });
+    });
+    return snapshots;
+  }
+
   @override
   Widget build(BuildContext context) {
-    //print(this.googleSignIn.currentUser.displayName);
+    if (this.sharedUsersEmail!=null) {
+      setState(() {
+        this._isSharedListCreated = true;
+      });
+    }
+    //print(sharedUsers);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -108,8 +128,6 @@ class HomePageState extends State<HomePage> {
                                     "Enter registered email of the person"),
                                 content: TextField(
                                   autofocus: true,
-                                  //textCapitalization:
-                                  //TextCapitalization.sentences,
                                   keyboardType: TextInputType.emailAddress,
                                   onChanged: (String value) {
                                     setState(() {
@@ -124,9 +142,27 @@ class HomePageState extends State<HomePage> {
                                       if (this
                                           .registeredUsersEmail
                                           .contains(this._enteredEmail)) {
-                                        print("Registered Email found");
                                         setState(() {
                                           this._isSharedListCreated = true;
+                                        });
+
+                                        Firestore.instance
+                                            .collection(widget.user.email + '_shared')
+                                            .add({
+                                          'email': this._enteredEmail,
+                                        });
+
+                                        Firestore.instance
+                                            .collection(this._enteredEmail + '_shared')
+                                            .add({
+                                          'email': widget.user.email,
+                                        });
+
+                                        Firestore.instance
+                                            .collection(this._enteredEmail)
+                                            .add({
+                                          'email': this._enteredEmail,
+                                          'shares_with': widget.user.email,
                                         });
 
                                         Navigator.pop(context);
@@ -151,7 +187,7 @@ class HomePageState extends State<HomePage> {
                                             googleSignIn:
                                                 this.widget.googleSignIn,
                                             user: this.widget.user,
-                                            shareEmail: this._enteredEmail,
+                                            shareEmail: this.sharedUsersEmail,
                                           )));
                             },
                           ),

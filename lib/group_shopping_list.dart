@@ -19,157 +19,299 @@ class _GroupShoppingListState extends State<GroupShoppingList> {
 
   void initState() {
     super.initState();
-    _firebaseMessaging.configure(
-      onMessage: (Map<String, dynamic> message) {
-        print('on message $message');
-      },
-      onResume: (Map<String, dynamic> message) {
-        print('on resume $message');
-      },
-      onLaunch: (Map<String, dynamic> message) {
-        print('on launch $message');
-      },
-    );
-    // _firebaseMessaging.getToken().then((token){
-    //   print(token);
-    // });
-    _firebaseMessaging.subscribeToTopic('shopping_list');
+    listOfSharedUsers();
   }
 
   String item;
+  String sharedUsersEmail;
+
+  Stream<QuerySnapshot> listOfSharedUsers() {
+    Stream<QuerySnapshot> snapshots =
+        Firestore.instance.collection(widget.user.email).snapshots();
+    snapshots.listen((data) {
+      data.documents.forEach((doc) {
+        setState(() {
+          this.sharedUsersEmail = (doc['shares_with']);
+        });
+      });
+    });
+    return snapshots;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Shopping List"),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Enter an item to purchase"),
-                    content: TextField(
-                      autofocus: true,
-                      textCapitalization: TextCapitalization.sentences,
-                      keyboardType: TextInputType.text,
-                      onChanged: (String value) {
-                        setState(() {
-                          this.item = value;
-                        });
-                      },
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        child: Icon(Icons.add_shopping_cart),
-                        onPressed: () {
-                          Firestore.instance
-                              .runTransaction((Transaction transaction) async {
-                            CollectionReference reference = Firestore.instance
-                                .collection(widget.user.email +
-                                    widget.shareEmail +
-                                    '_shoppingList');
-                            await reference.add({"name": item});
-                          });
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      FlatButton(
-                        child: Icon(Icons.cancel),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                });
-          },
-          child: Icon(Icons.add_shopping_cart),
-        ),
-        body: StreamBuilder<QuerySnapshot>(
-          stream: Firestore.instance
-              .collection(
-                  widget.user.email + widget.shareEmail + '_shoppingList')
-              .snapshots(),
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasError) return Text('Error: ${snapshot.error}');
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                          child: FlareActor(
-                        "assets/Loading_cart.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: "cart_loading",
-                      ))
-                    ],
-                  ),
-                );
-              default:
-                return ListView(
-                  children:
-                      snapshot.data.documents.map((DocumentSnapshot document) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                          title: Text(
-                            document['name'],
-                            style: TextStyle(
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+    return this.sharedUsersEmail != null
+        ? MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              appBar: AppBar(
+                title: Text("Shopping List"),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Enter an item to purchase"),
+                          content: TextField(
+                            autofocus: true,
+                            textCapitalization: TextCapitalization.sentences,
+                            keyboardType: TextInputType.text,
+                            onChanged: (String value) {
+                              setState(() {
+                                this.item = value;
+                              });
+                            },
                           ),
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text(
-                                        "Purchased " + document['name'] + " ?"),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                        child: Icon(Icons.done),
-                                        onPressed: () {
-                                          Firestore.instance
-                                              .collection(widget.user.email +
-                                                  widget.shareEmail +
-                                                  '_shoppingList')
-                                              .document(document.documentID)
-                                              .delete();
-
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      FlatButton(
-                                        child: Icon(Icons.cancel),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
-                                  );
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Icon(Icons.add_shopping_cart),
+                              onPressed: () {
+                                Firestore.instance.runTransaction(
+                                    (Transaction transaction) async {
+                                  CollectionReference reference = Firestore
+                                      .instance
+                                      .collection(this.sharedUsersEmail +
+                                          widget.user.email +
+                                          '_shoppingList');
+                                  await reference.add({"name": item});
                                 });
-                          },
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            FlatButton(
+                              child: Icon(Icons.cancel),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      });
+                },
+                child: Icon(Icons.add_shopping_cart),
+              ),
+              body: StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance
+                    .collection(
+                        this.sharedUsersEmail + widget.user.email + '_shoppingList')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.error}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                                child: FlareActor(
+                              "assets/Loading_cart.flr",
+                              alignment: Alignment.center,
+                              fit: BoxFit.contain,
+                              animation: "cart_loading",
+                            ))
+                          ],
                         ),
-                      ),
-                    );
-                  }).toList(),
-                );
-            }
-          },
-        ),
-      ),
-    );
+                      );
+                    default:
+                      return ListView(
+                        children: snapshot.data.documents
+                            .map((DocumentSnapshot document) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(
+                                  document['name'],
+                                  style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black),
+                                ),
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text("Purchased " +
+                                              document['name'] +
+                                              " ?"),
+                                          actions: <Widget>[
+                                            FlatButton(
+                                              child: Icon(Icons.done),
+                                              onPressed: () {
+                                                Firestore.instance
+                                                    .collection(
+                                                        this.sharedUsersEmail +
+                                                            widget.user.email +
+                                                            '_shoppingList')
+                                                    .document(
+                                                        document.documentID)
+                                                    .delete();
+
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            FlatButton(
+                                              child: Icon(Icons.cancel),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      });
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                  }
+                },
+              ),
+            ),
+          )
+        : MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              appBar: AppBar(
+                title: Text("Shopping List"),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Enter an item to purchase"),
+                          content: TextField(
+                            autofocus: true,
+                            textCapitalization: TextCapitalization.sentences,
+                            keyboardType: TextInputType.text,
+                            onChanged: (String value) {
+                              setState(() {
+                                this.item = value;
+                              });
+                            },
+                          ),
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Icon(Icons.add_shopping_cart),
+                              onPressed: () {
+                                Firestore.instance.runTransaction(
+                                    (Transaction transaction) async {
+                                  CollectionReference reference = Firestore
+                                      .instance
+                                      .collection(widget.user.email +
+                                          widget.shareEmail +
+                                          '_shoppingList');
+                                  await reference.add({"name": item});
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            FlatButton(
+                              child: Icon(Icons.cancel),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      });
+                },
+                child: Icon(Icons.add_shopping_cart),
+              ),
+              body: StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance
+                    .collection(
+                        widget.user.email + widget.shareEmail + '_shoppingList')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.error}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                                child: FlareActor(
+                              "assets/Loading_cart.flr",
+                              alignment: Alignment.center,
+                              fit: BoxFit.contain,
+                              animation: "cart_loading",
+                            ))
+                          ],
+                        ),
+                      );
+                    default:
+                      return ListView(
+                        children: snapshot.data.documents
+                            .map((DocumentSnapshot document) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(
+                                  document['name'],
+                                  style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black),
+                                ),
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text("Purchased " +
+                                              document['name'] +
+                                              " ?"),
+                                          actions: <Widget>[
+                                            FlatButton(
+                                              child: Icon(Icons.done),
+                                              onPressed: () {
+                                                Firestore.instance
+                                                    .collection(
+                                                        widget.user.email +
+                                                            widget.shareEmail +
+                                                            '_shoppingList')
+                                                    .document(
+                                                        document.documentID)
+                                                    .delete();
+
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            FlatButton(
+                                              child: Icon(Icons.cancel),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      });
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                  }
+                },
+              ),
+            ),
+          );
   }
 }
