@@ -248,29 +248,20 @@ class _LoginPageState extends State<LoginPage> {
           ? MaterialApp(
               debugShowCheckedModeBanner: false,
               home: Scaffold(
-                appBar: AppBar(
-                  actions: <Widget>[
-                    IconButton(
-                        icon: Icon(Icons.refresh),
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    new LoginPage()))),
-                  ],
-                ),
                 body: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                          child: FlareActor(
-                        "assets/Filip.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: "idle",
-                      ))
+                    children: <Widget>[
+                      Text('Opps! Something went wrong...'),
+                      RaisedButton(
+                        child: Text('Go back to login screen'),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    new LoginPage())),
+                      )
                     ],
                   ),
                 ),
