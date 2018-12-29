@@ -25,7 +25,6 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     listOfRegisteredUsers();
     listOfSharedUsers();
@@ -67,9 +66,8 @@ class HomePageState extends State<HomePage> {
   }
 
   Stream<QuerySnapshot> getSharedUsersEmail() {
-    Stream<QuerySnapshot> snapshots = Firestore.instance
-        .collection('shared_list')
-        .snapshots();
+    Stream<QuerySnapshot> snapshots =
+        Firestore.instance.collection('shared_list').snapshots();
     snapshots.listen((data) {
       data.documents.forEach((doc) {
         setState(() {
@@ -161,12 +159,11 @@ class HomePageState extends State<HomePage> {
                                       FlatButton(
                                         child: Text('Add'),
                                         onPressed: () {
-
-                                          if(this.sharedUsersEmailList.contains(this._enteredEmail)){
+                                          if (this
+                                              .sharedUsersEmailList
+                                              .contains(this._enteredEmail)) {
                                             print('Already shares a list!');
-                                          }
-
-                                          else if (this
+                                          } else if (this
                                               .registeredUsersEmail
                                               .contains(this._enteredEmail)) {
                                             setState(() {
@@ -184,8 +181,6 @@ class HomePageState extends State<HomePage> {
                                                 .add({
                                               'email': widget.user.email,
                                             });
-
-
 
                                             Firestore.instance
                                                 .collection(widget.user.email +
