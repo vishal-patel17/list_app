@@ -162,7 +162,27 @@ class HomePageState extends State<HomePage> {
                                           if (this
                                               .sharedUsersEmailList
                                               .contains(this._enteredEmail)) {
-                                            print('Already shares a list!');
+                                            showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                        "${this._enteredEmail} already shares a list!"),
+                                                    content: Text(
+                                                        'Please enter another registered email'),
+                                                    actions: <Widget>[
+                                                      FlatButton(
+                                                        child:
+                                                            Icon(Icons.close),
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
                                           } else if (this
                                               .registeredUsersEmail
                                               .contains(this._enteredEmail)) {
@@ -207,6 +227,28 @@ class HomePageState extends State<HomePage> {
                                             setState(() {
                                               this._isButtonDisabled = true;
                                             });
+                                          } else {
+                                            showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                        "${this._enteredEmail} is not registered!"),
+                                                    content: Text(
+                                                        'Please enter a registered email'),
+                                                    actions: <Widget>[
+                                                      FlatButton(
+                                                        child:
+                                                            Icon(Icons.close),
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
                                           }
                                         },
                                       ),
