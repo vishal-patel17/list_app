@@ -7,6 +7,7 @@ import './loginpage.dart';
 import './shopping_list.dart';
 import './task_list.dart';
 import './group_shopping_list.dart';
+import './group_task_list.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser user;
@@ -34,6 +35,7 @@ class HomePageState extends State<HomePage> {
   String sharedUsersEmail;
   String _enteredEmail;
   bool _isSharedListCreated = false;
+  bool _isButtonDisabled = false;
 
   Stream<QuerySnapshot> listOfRegisteredUsers() {
     Stream<QuerySnapshot> snapshots =
@@ -49,8 +51,9 @@ class HomePageState extends State<HomePage> {
   }
 
   Stream<QuerySnapshot> listOfSharedUsers() {
-    Stream<QuerySnapshot> snapshots =
-        Firestore.instance.collection(widget.user.email + '_shared').snapshots();
+    Stream<QuerySnapshot> snapshots = Firestore.instance
+        .collection(widget.user.email + '_shared')
+        .snapshots();
     snapshots.listen((data) {
       data.documents.forEach((doc) {
         setState(() {
@@ -63,9 +66,10 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.sharedUsersEmail!=null) {
+    if (this.sharedUsersEmail != null) {
       setState(() {
         this._isSharedListCreated = true;
+        this._isButtonDisabled = true;
       });
     }
     //print(sharedUsers);
@@ -117,80 +121,113 @@ class HomePageState extends State<HomePage> {
                               user: this.widget.user),
                         )),
                   ),
-                  RaisedButton(
-                      child: Text('Create Sharing List'),
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(
-                                    "Enter registered email of the person"),
-                                content: TextField(
-                                  autofocus: true,
-                                  keyboardType: TextInputType.emailAddress,
-                                  onChanged: (String value) {
-                                    setState(() {
-                                      this._enteredEmail = value;
-                                    });
-                                  },
-                                ),
-                                actions: <Widget>[
-                                  FlatButton(
-                                    child: Text('Add'),
-                                    onPressed: () {
-                                      if (this
-                                          .registeredUsersEmail
-                                          .contains(this._enteredEmail)) {
+                  _isButtonDisabled
+                      ? SizedBox(height: 20.0)
+                      : RaisedButton(
+                          child: Text('Create Sharing List'),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        "Enter registered email of the person"),
+                                    content: TextField(
+                                      autofocus: true,
+                                      keyboardType: TextInputType.emailAddress,
+                                      onChanged: (String value) {
                                         setState(() {
-                                          this._isSharedListCreated = true;
+                                          this._enteredEmail = value;
                                         });
+                                      },
+                                    ),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                        child: Text('Add'),
+                                        onPressed: () {
+                                          if (this
+                                              .registeredUsersEmail
+                                              .contains(this._enteredEmail)) {
+                                            setState(() {
+                                              this._isSharedListCreated = true;
+                                            });
 
-                                        Firestore.instance
-                                            .collection(widget.user.email + '_shared')
-                                            .add({
-                                          'email': this._enteredEmail,
-                                        });
+                                            Firestore.instance
+                                                .collection(widget.user.email +
+                                                    '_shared')
+                                                .add({
+                                              'email': this._enteredEmail,
+                                            });
 
-                                        Firestore.instance
-                                            .collection(this._enteredEmail + '_shared')
-                                            .add({
-                                          'email': widget.user.email,
-                                        });
+                                            Firestore.instance
+                                                .collection(this._enteredEmail +
+                                                    '_shared')
+                                                .add({
+                                              'email': widget.user.email,
+                                            });
 
-                                        Firestore.instance
-                                            .collection(this._enteredEmail)
-                                            .add({
-                                          'email': this._enteredEmail,
-                                          'shares_with': widget.user.email,
-                                        });
+                                            Firestore.instance
+                                                .collection(this._enteredEmail)
+                                                .add({
+                                              'email': this._enteredEmail,
+                                              'shares_with': widget.user.email,
+                                            });
 
-                                        Navigator.pop(context);
-                                      }
-                                    },
-                                  ),
-                                ],
-                              );
-                            });
-                      }),
+                                            Navigator.pop(context);
+                                            setState(() {
+                                              this._isButtonDisabled = true;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                });
+                          }),
                   SizedBox(height: 20.0),
                   this._isSharedListCreated
-                      ? Card(
-                          child: ListTile(
-                            title: Text("Shared list"),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          new GroupShoppingList(
-                                            googleSignIn:
-                                                this.widget.googleSignIn,
-                                            user: this.widget.user,
-                                            shareEmail: this.sharedUsersEmail,
-                                          )));
-                            },
-                          ),
+                      ? ListView(
+                          shrinkWrap: true,
+                          children: <Widget>[
+                            Card(
+                              child: ListTile(
+                                title: Text("Shared Shopping List"),
+                                subtitle: Text("with ${this.sharedUsersEmail}"),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              new GroupShoppingList(
+                                                googleSignIn:
+                                                    this.widget.googleSignIn,
+                                                user: this.widget.user,
+                                                shareEmail:
+                                                    this.sharedUsersEmail,
+                                              )));
+                                },
+                              ),
+                            ),
+                            Card(
+                              child: ListTile(
+                                title: Text("Shared Task List"),
+                                subtitle: Text("with ${this.sharedUsersEmail}"),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              new GroupTaskList(
+                                                googleSignIn:
+                                                    this.widget.googleSignIn,
+                                                user: this.widget.user,
+                                                shareEmail:
+                                                    this.sharedUsersEmail,
+                                              )));
+                                },
+                              ),
+                            )
+                          ],
                         )
                       : Card(),
                 ],
