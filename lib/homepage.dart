@@ -29,9 +29,11 @@ class HomePageState extends State<HomePage> {
     super.initState();
     listOfRegisteredUsers();
     listOfSharedUsers();
+    getSharedUsersEmail();
   }
 
   final List<String> registeredUsersEmail = [];
+  final List<String> sharedUsersEmailList = [];
   String sharedUsersEmail;
   String _enteredEmail;
   bool _isSharedListCreated = false;
@@ -58,6 +60,20 @@ class HomePageState extends State<HomePage> {
       data.documents.forEach((doc) {
         setState(() {
           this.sharedUsersEmail = (doc['email']);
+        });
+      });
+    });
+    return snapshots;
+  }
+
+  Stream<QuerySnapshot> getSharedUsersEmail() {
+    Stream<QuerySnapshot> snapshots = Firestore.instance
+        .collection('shared_list')
+        .snapshots();
+    snapshots.listen((data) {
+      data.documents.forEach((doc) {
+        setState(() {
+          this.sharedUsersEmailList.add(doc['email']);
         });
       });
     });
@@ -145,12 +161,31 @@ class HomePageState extends State<HomePage> {
                                       FlatButton(
                                         child: Text('Add'),
                                         onPressed: () {
-                                          if (this
+
+                                          if(this.sharedUsersEmailList.contains(this._enteredEmail)){
+                                            print('Already shares a list!');
+                                          }
+
+                                          else if (this
                                               .registeredUsersEmail
                                               .contains(this._enteredEmail)) {
                                             setState(() {
                                               this._isSharedListCreated = true;
                                             });
+
+                                            Firestore.instance
+                                                .collection('shared_list')
+                                                .add({
+                                              'email': this._enteredEmail,
+                                            });
+
+                                            Firestore.instance
+                                                .collection('shared_list')
+                                                .add({
+                                              'email': widget.user.email,
+                                            });
+
+
 
                                             Firestore.instance
                                                 .collection(widget.user.email +
