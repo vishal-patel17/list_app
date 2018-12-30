@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flare_flutter/flare_actor.dart";
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 import './homepage.dart';
 
@@ -123,46 +124,67 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget showLogin(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+    return DefaultTabController(
+      //debugShowCheckedModeBanner: false,
+      length: 2,
+      child: Scaffold(
         appBar: AppBar(
-          title: Text('Login'),
+          bottom: TabBar(tabs: [
+            Tab(
+              text: "Login",
+            ),
+            Tab(
+              text: "Signup",
+            ),
+          ]),
+          title: Text('Welcome to List'),
         ),
-        body: Container(
-          child: Center(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
-              child: ListView(
-                shrinkWrap: true,
-                children: <Widget>[
-                  _homeAnimation(),
-                  TextField(
-                    decoration: InputDecoration(hintText: 'Email'),
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (String value) {
-                      setState(() {
-                        this._email = value;
-                      });
-                    },
-                  ),
-                  TextField(
-                    decoration: InputDecoration(hintText: 'Password'),
-                    keyboardType: TextInputType.text,
-                    obscureText: true,
-                    onChanged: (String value) {
-                      setState(() {
-                        this._password = value;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10.0),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.center,
+        body: TabBarView(
+          children: [
+            Container(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 10.0, right: 10.0, bottom: 10.0),
+                  child: ListView(
+                    shrinkWrap: true,
                     children: <Widget>[
-                      RaisedButton(
-                        child: Text('Login'),
+                      _homeAnimation(),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Email',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (String value) {
+                          setState(() {
+                            this._email = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.text,
+                        obscureText: true,
+                        onChanged: (String value) {
+                          setState(() {
+                            this._password = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      SignInButton(
+                        Buttons.Email,
                         onPressed: () {
                           FirebaseAuth.instance
                               .signInWithEmailAndPassword(
@@ -190,8 +212,122 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                       ),
+//                  RaisedButton(
+//                    child: Text(
+//                      'Signup',
+//                      style: TextStyle(color: Colors.white),
+//                    ),
+//                    shape: RoundedRectangleBorder(
+//                      borderRadius: BorderRadius.circular(24),
+//                    ),
+//                    color: Colors.lightBlueAccent,
+//                    padding: EdgeInsets.all(12.0),
+//                    onPressed: () {
+//                      FirebaseAuth.instance
+//                          .createUserWithEmailAndPassword(
+//                              email: this._email, password: this._password)
+//                          .then((FirebaseUser user) {
+//                        Firestore.instance.collection('/users').add({
+//                          'email': user.email,
+//                          'uid': user.uid,
+//                        }).then((value) {
+//                          Navigator.of(context).pop();
+//                          routeToHomepage(user);
+//                        }).catchError((e) {
+//                          print(e);
+//                        });
+//                      });
+//                    },
+//                  ),
+                      SizedBox(height: 10.0),
+                      SignInButton(
+                        Buttons.Google,
+                        onPressed: () => signIn().then((FirebaseUser user) {
+                              setState(() {
+                                this.fbUser = user;
+                              });
+                              Firestore.instance.collection('/users').add({
+                                'email': user.email,
+                                'uid': user.uid,
+                              });
+                              routeToHomepage(this.fbUser);
+                            }).catchError((e) => print(e)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Page 2
+            Container(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 10.0, right: 10.0, bottom: 10.0),
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      _homeAnimation(),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Email',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (String value) {
+                          setState(() {
+                            this._email = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.text,
+                        obscureText: true,
+                        onChanged: (String value) {
+                          setState(() {
+                            this._password = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Re-enter Password',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.text,
+                        obscureText: true,
+                        onChanged: (String value) {
+                          setState(() {
+                            //this._password = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
                       RaisedButton(
-                        child: Text('Signup'),
+                        child: Text(
+                          'Signup',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        color: Colors.lightBlueAccent,
+                        padding: EdgeInsets.all(12.0),
                         onPressed: () {
                           FirebaseAuth.instance
                               .createUserWithEmailAndPassword(
@@ -211,25 +347,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10.0),
-                  RaisedButton(
-                    child: Text('Login with Google'),
-                    onPressed: () => signIn().then((FirebaseUser user) {
-                          setState(() {
-                            this.fbUser = user;
-                          });
-                          Firestore.instance.collection('/users').add({
-                            'email': user.email,
-                            'uid': user.uid,
-                          });
-                          routeToHomepage(this.fbUser);
-                          //Navigator.pushNamed(context, '/homepage');
-                        }).catchError((e) => print(e)),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -253,15 +374,15 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Text('Opps! Something went wrong...'),
-                      RaisedButton(
-                        child: Text('Go back to login screen'),
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    new LoginPage())),
-                      )
+                      CircularProgressIndicator(),
+//                      RaisedButton(
+//                        child: Text('Go back to login screen'),
+//                        onPressed: () => Navigator.push(
+//                            context,
+//                            MaterialPageRoute(
+//                                builder: (BuildContext context) =>
+//                                    new LoginPage())),
+//                      ),
                     ],
                   ),
                 ),

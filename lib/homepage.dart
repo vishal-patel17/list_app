@@ -8,6 +8,7 @@ import './shopping_list.dart';
 import './task_list.dart';
 import './group_shopping_list.dart';
 import './group_task_list.dart';
+import './group_chat.dart';
 
 class HomePage extends StatefulWidget {
   final FirebaseUser user;
@@ -122,8 +123,17 @@ class HomePageState extends State<HomePage> {
                 );
               });
             },
-          )
+          ),
         ], title: Text("Welcome ${widget.user.email}")),
+        floatingActionButton: this._isSharedListCreated
+            ? FloatingActionButton(
+                child: Icon(Icons.chat),
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => new GroupChat())),
+              )
+            : null,
         body: RefreshIndicator(
           onRefresh: refreshPage,
           child: Center(
@@ -477,7 +487,8 @@ class HomePageState extends State<HomePage> {
                                                 )));
                                   },
                                 ),
-                              )
+                              ),
+                              SizedBox(height: 20.0),
                             ],
                           )
                         : Card(),
