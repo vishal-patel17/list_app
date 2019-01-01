@@ -128,16 +128,24 @@ class _LoginPageState extends State<LoginPage> {
       //debugShowCheckedModeBanner: false,
       length: 2,
       child: Scaffold(
+        //backgroundColor: Colors.white70,
         appBar: AppBar(
-          bottom: TabBar(tabs: [
-            Tab(
-              text: "Login",
-            ),
-            Tab(
-              text: "Signup",
-            ),
-          ]),
-          title: Text('Welcome to List'),
+          //backgroundColor: Colors.transparent,
+          elevation: 0.0,
+          bottom: TabBar(
+            tabs: [
+              Tab(
+                text: "Login",
+              ),
+              Tab(
+                text: "Signup",
+              ),
+            ],
+            labelColor: Colors.white,
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+            indicatorColor: Colors.white,
+          ),
+          //title: Text('Welcome to List'),
         ),
         body: TabBarView(
           children: [
@@ -149,8 +157,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      _homeAnimation(),
+                      //_homeAnimation(),
                       TextField(
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           hintText: 'Email',
                           contentPadding:
@@ -167,6 +177,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: 10.0),
                       TextField(
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           hintText: 'Password',
                           contentPadding:
@@ -193,7 +205,6 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.of(context).pop();
                             routeToHomepage(user);
                           }).catchError((e) {
-                            print(e);
                             showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -212,33 +223,6 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                       ),
-//                  RaisedButton(
-//                    child: Text(
-//                      'Signup',
-//                      style: TextStyle(color: Colors.white),
-//                    ),
-//                    shape: RoundedRectangleBorder(
-//                      borderRadius: BorderRadius.circular(24),
-//                    ),
-//                    color: Colors.lightBlueAccent,
-//                    padding: EdgeInsets.all(12.0),
-//                    onPressed: () {
-//                      FirebaseAuth.instance
-//                          .createUserWithEmailAndPassword(
-//                              email: this._email, password: this._password)
-//                          .then((FirebaseUser user) {
-//                        Firestore.instance.collection('/users').add({
-//                          'email': user.email,
-//                          'uid': user.uid,
-//                        }).then((value) {
-//                          Navigator.of(context).pop();
-//                          routeToHomepage(user);
-//                        }).catchError((e) {
-//                          print(e);
-//                        });
-//                      });
-//                    },
-//                  ),
                       SizedBox(height: 10.0),
                       SignInButton(
                         Buttons.Google,
@@ -267,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      _homeAnimation(),
+                      //_homeAnimation(),
                       TextField(
                         decoration: InputDecoration(
                           hintText: 'Email',

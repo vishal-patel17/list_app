@@ -107,24 +107,27 @@ class HomePageState extends State<HomePage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.exit_to_app),
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              this
-                  .widget
-                  .googleSignIn
-                  .signOut()
-                  .then((GoogleSignInAccount gSa) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              });
-            },
-          ),
-        ], title: Text("Welcome ${widget.user.email}")),
+        appBar: AppBar(
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.exit_to_app),
+              onPressed: () {
+                FirebaseAuth.instance.signOut();
+                this
+                    .widget
+                    .googleSignIn
+                    .signOut()
+                    .then((GoogleSignInAccount gSa) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                });
+              },
+            ),
+          ],
+          title: Text("Welcome ${widget.user.email}"),
+        ),
         floatingActionButton: this._isSharedListCreated
             ? FloatingActionButton(
                 child: Icon(Icons.chat),
@@ -460,6 +463,7 @@ class HomePageState extends State<HomePage> {
                                                           ds.reference.delete();
                                                       }
                                                     });
+                                                    this.refreshPage();
                                                     Navigator.of(context).pop();
                                                   }),
                                             ],
