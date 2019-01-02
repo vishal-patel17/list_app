@@ -80,7 +80,7 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<Null> refreshPage() async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
 
     Navigator.pushReplacement(
       context,
@@ -126,7 +126,20 @@ class HomePageState extends State<HomePage> {
               },
             ),
           ],
-          title: Text("Welcome ${widget.user.email}"),
+          title: Text("Lists"),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Center(child: Text("${widget.user.displayName!=null? widget.user.displayName: widget.user.email}")),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
         ),
         floatingActionButton: this._isSharedListCreated
             ? FloatingActionButton(

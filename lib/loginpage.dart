@@ -29,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   GoogleSignInAccount account1;
   String _email;
   String _password;
+  String _userName;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -49,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
       this.fbUser = user;
     });
 
-    print("User name: ${user.displayName}");
     setState(() {
       this._isLoading = false;
     });
@@ -252,6 +252,22 @@ class _LoginPageState extends State<LoginPage> {
                     shrinkWrap: true,
                     children: <Widget>[
                       //_homeAnimation(),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Username',
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(32.0)),
+                        ),
+                        keyboardType: TextInputType.text,
+                        onChanged: (String value) {
+                          setState(() {
+                            this._userName = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
                       TextField(
                         decoration: InputDecoration(
                           hintText: 'Email',
