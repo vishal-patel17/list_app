@@ -8,7 +8,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ShoppingList extends StatefulWidget {
   final GoogleSignIn googleSignIn;
   final FirebaseUser user;
-  ShoppingList({Key key, this.googleSignIn, this.user}) : super(key: key);
+  final String list;
+  ShoppingList({Key key, this.googleSignIn, this.user, this.list})
+      : super(key: key);
   _ShoppingListState createState() => _ShoppingListState();
 }
 
@@ -36,13 +38,32 @@ class _ShoppingListState extends State<ShoppingList> {
 
   String item;
 
+  Future<Null> refreshPage() async {
+    await Future.delayed(Duration(seconds: 1));
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ShoppingList(
+                googleSignIn: widget.googleSignIn,
+                user: widget.user,
+                list: widget.list,
+              )),
+    );
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        //backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
         appBar: AppBar(
-          title: Text("Shopping List"),
+          //elevation: 0.1,
+          //backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
+          title: Text(widget.list, style: TextStyle(fontSize: 25.0)),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -50,7 +71,7 @@ class _ShoppingListState extends State<ShoppingList> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Enter an item to purchase"),
+                    title: Text("New ${widget.list}"),
                     content: TextField(
                       autofocus: true,
                       textCapitalization: TextCapitalization.sentences,
@@ -63,20 +84,20 @@ class _ShoppingListState extends State<ShoppingList> {
                     ),
                     actions: <Widget>[
                       FlatButton(
-                        child: Icon(Icons.add_shopping_cart),
+                        child: Text('Add'),
                         onPressed: () {
                           Firestore.instance
                               .runTransaction((Transaction transaction) async {
                             CollectionReference reference = Firestore.instance
                                 .collection(
-                                    widget.user.email + '_shoppingList');
+                                    widget.user.email + '_' + widget.list);
                             await reference.add({"name": item});
                           });
                           Navigator.of(context).pop();
                         },
                       ),
                       FlatButton(
-                        child: Icon(Icons.cancel),
+                        child: Text('Cancel'),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -85,84 +106,109 @@ class _ShoppingListState extends State<ShoppingList> {
                   );
                 });
           },
-          child: Icon(Icons.add_shopping_cart),
+          child: Icon(Icons.add),
         ),
-        body: StreamBuilder<QuerySnapshot>(
-          stream: Firestore.instance
-              .collection(widget.user.email + '_shoppingList')
-              .snapshots(),
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasError) return Text('Error: ${snapshot.error}');
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                          child: FlareActor(
-                        "assets/Loading_cart.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: "cart_loading",
-                      ))
-                    ],
-                  ),
-                );
-              default:
-                return ListView(
-                  children:
-                      snapshot.data.documents.map((DocumentSnapshot document) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                          title: Text(
-                            document['name'],
-                            style: TextStyle(
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
-                          ),
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text(
-                                        "Purchased " + document['name'] + " ?"),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                        child: Icon(Icons.done),
-                                        onPressed: () {
-                                          Firestore.instance
-                                              .collection(widget.user.email +
-                                                  '_shoppingList')
-                                              .document(document.documentID)
-                                              .delete();
+        body: RefreshIndicator(
+          onRefresh: refreshPage,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance
+                .collection(widget.user.email + '_' + widget.list)
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) return Text('Error: ${snapshot.error}');
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                            child: FlareActor(
+                          "assets/Loading_cart.flr",
+                          alignment: Alignment.center,
+                          fit: BoxFit.contain,
+                          animation: "cart_loading",
+                        ))
+                      ],
+                    ),
+                  );
+                default:
+                  return ListView(
+                    children: snapshot.data.documents
+                        .map((DocumentSnapshot document) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Card(
+                          elevation: 10.0,
+                          margin: new EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 10.0),
+                          child: ListTile(
+                            leading: Container(
+                              padding: EdgeInsets.only(right: 12.0),
+                              decoration: new BoxDecoration(
+                                  border: new Border(
+                                      right: new BorderSide(
+                                          width: 1.0, color: Colors.black12))),
+                              child: Icon(Icons.list, color: Colors.black),
+                            ),
+                            title: Text(
+                              document['name'],
+                              style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                            trailing: IconButton(
+                                icon: Icon(Icons.done,
+                                    color: Colors.black, size: 30.0),
+                                onPressed: () {
+                                  Firestore.instance
+                                      .collection(
+                                          widget.user.email + '_' + widget.list)
+                                      .document(document.documentID)
+                                      .delete();
+                                }),
+                            onLongPress: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text(
+                                          "Delete " + document['name'] + " ?"),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Icon(Icons.done),
+                                          onPressed: () {
+                                            Firestore.instance
+                                                .collection(widget.user.email +
+                                                    '_' +
+                                                    widget.list)
+                                                .document(document.documentID)
+                                                .delete();
 
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      FlatButton(
-                                        child: Icon(Icons.cancel),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                });
-                          },
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: Icon(Icons.cancel),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  });
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                );
-            }
-          },
+                      );
+                    }).toList(),
+                  );
+              }
+            },
+          ),
         ),
       ),
     );
