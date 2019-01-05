@@ -102,11 +102,9 @@ class _LoginPageState extends State<LoginPage> {
     if (user.email.length > 0) {
       setState(() {
         this._isSignedIn = true;
+        this.fbUser = user;
       });
     }
-    setState(() {
-      this.fbUser = user;
-    });
     return user;
   }
 
@@ -116,6 +114,7 @@ class _LoginPageState extends State<LoginPage> {
             user: user,
             googleSignIn: googleSignIn,
             googleSignInAccount: this.googleSignInAccount,
+            //userName: this._userName,
           ),
     );
     Navigator.of(context).pushReplacement(route);
@@ -419,6 +418,9 @@ class _LoginPageState extends State<LoginPage> {
                   'email': user.email,
                   'uid': user.uid,
                 }).then((value) {
+                  Firestore.instance.collection(user.email).add({
+                    'username': this._userName,
+                  });
                   Navigator.of(context).pop();
                   routeToHomepage(user);
                 }).catchError((e) {
@@ -626,6 +628,7 @@ class _LoginPageState extends State<LoginPage> {
         user: this.fbUser,
         googleSignIn: this.googleSignIn,
         googleSignInAccount: this.account1,
+        //userName: this._userName,
       );
     } else {
       return _isLoading

@@ -13,6 +13,7 @@ class HomePage extends StatefulWidget {
   final FirebaseUser user;
   final GoogleSignIn googleSignIn;
   final GoogleSignInAccount googleSignInAccount;
+  //final String userName;
   HomePage({Key key, this.user, this.googleSignIn, this.googleSignInAccount})
       : super(key: key);
 
@@ -29,6 +30,7 @@ class HomePageState extends State<HomePage> {
     listOfRegisteredUsers();
     listOfSharedUsers();
     getSharedUsersEmail();
+    getUserName();
   }
 
   final List<String> registeredUsersEmail = [];
@@ -36,8 +38,22 @@ class HomePageState extends State<HomePage> {
   String sharedUsersEmail;
   String _enteredEmail;
   String _newList;
+  String _userName;
   bool _isSharedListCreated = false;
   bool _isButtonDisabled = false;
+
+  Stream<QuerySnapshot> getUserName() {
+    Stream<QuerySnapshot> snapshots =
+        Firestore.instance.collection(widget.user.email).snapshots();
+    snapshots.listen((data) {
+      data.documents.forEach((doc) {
+        setState(() {
+          this._userName = (doc['username']);
+        });
+      });
+    });
+    return snapshots;
+  }
 
   Stream<QuerySnapshot> listOfRegisteredUsers() {
     Stream<QuerySnapshot> snapshots =
@@ -395,8 +411,10 @@ class HomePageState extends State<HomePage> {
                                   ),
                                   subtitle: Row(
                                     children: <Widget>[
-                                      Icon(Icons.linear_scale, color: Colors.red),
-                                      Text(" Meta Data ", style: TextStyle(color: Colors.black))
+                                      Icon(Icons.linear_scale,
+                                          color: Colors.red),
+                                      Text(" Meta Data ",
+                                          style: TextStyle(color: Colors.black))
                                     ],
                                   ),
                                   onTap: () {
@@ -509,7 +527,8 @@ class HomePageState extends State<HomePage> {
                   });
                 }),
           ],
-          title: Text("Welcome ${widget.user.email}"),
+          title: Text(
+              "Welcome ${this._userName != null ? this._userName : widget.googleSignIn.currentUser.displayName}"),
           bottom: TabBar(
             tabs: [
               Tab(
