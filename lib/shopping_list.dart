@@ -15,25 +15,12 @@ class ShoppingList extends StatefulWidget {
 }
 
 class _ShoppingListState extends State<ShoppingList> {
-  FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
+  //FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
 
   void initState() {
     super.initState();
-    _firebaseMessaging.configure(
-      onMessage: (Map<String, dynamic> message) {
-        print('on message $message');
-      },
-      onResume: (Map<String, dynamic> message) {
-        print('on resume $message');
-      },
-      onLaunch: (Map<String, dynamic> message) {
-        print('on launch $message');
-      },
-    );
-    // _firebaseMessaging.getToken().then((token){
-    //   print(token);
-    // });
-    _firebaseMessaging.subscribeToTopic('shopping_list');
+
+    getItemCount();
   }
 
   String item;
@@ -54,6 +41,20 @@ class _ShoppingListState extends State<ShoppingList> {
     return null;
   }
 
+  String _count;
+
+  Future<QuerySnapshot> getItemCount() async {
+    QuerySnapshot snapshots = await Firestore.instance
+        .collection(widget.user.email + '_' + widget.list)
+        .getDocuments();
+
+    setState(() {
+      this._count = snapshots.documents.length.toString();
+    });
+
+    return snapshots;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -63,7 +64,8 @@ class _ShoppingListState extends State<ShoppingList> {
         appBar: AppBar(
           //elevation: 0.1,
           //backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
-          title: Text(widget.list, style: TextStyle(fontSize: 25.0)),
+          title:
+              Text(widget.list + this._count, style: TextStyle(fontSize: 25.0)),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
