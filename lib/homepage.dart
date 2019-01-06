@@ -31,6 +31,7 @@ class HomePageState extends State<HomePage> {
     listOfSharedUsers();
     getSharedUsersEmail();
     getUserName();
+    getGoogleUsername();
   }
 
   final List<String> registeredUsersEmail = [];
@@ -53,6 +54,16 @@ class HomePageState extends State<HomePage> {
       });
     });
     return snapshots;
+  }
+
+  Future<bool> getGoogleUsername() async {
+    bool isGoogleuser = await widget.googleSignIn.isSignedIn();
+    if(isGoogleuser){
+      setState(() {
+        this._userName = widget.googleSignIn.currentUser.displayName;
+      });
+    }
+    return isGoogleuser;
   }
 
   Stream<QuerySnapshot> listOfRegisteredUsers() {
@@ -527,8 +538,7 @@ class HomePageState extends State<HomePage> {
                   });
                 }),
           ],
-          title: Text(
-              "Welcome ${this._userName != null ? this._userName : widget.googleSignIn.currentUser.displayName}"),
+          title: Text("Welcome ${this._userName}"),
           bottom: TabBar(
             tabs: [
               Tab(
