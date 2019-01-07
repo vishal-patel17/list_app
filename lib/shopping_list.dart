@@ -64,8 +64,8 @@ class _ShoppingListState extends State<ShoppingList> {
         appBar: AppBar(
           //elevation: 0.1,
           //backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
-          title:
-              Text(widget.list + this._count, style: TextStyle(fontSize: 25.0)),
+          title: Text("${this._count} pending items",
+              style: TextStyle(fontSize: 25.0)),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -96,6 +96,7 @@ class _ShoppingListState extends State<ShoppingList> {
                             await reference.add({"name": item});
                           });
                           Navigator.of(context).pop();
+                          refreshPage();
                         },
                       ),
                       FlatButton(
@@ -171,6 +172,7 @@ class _ShoppingListState extends State<ShoppingList> {
                                           widget.user.email + '_' + widget.list)
                                       .document(document.documentID)
                                       .delete();
+                                  refreshPage();
                                 }),
                             onLongPress: () {
                               showDialog(
@@ -191,6 +193,7 @@ class _ShoppingListState extends State<ShoppingList> {
                                                 .delete();
 
                                             Navigator.pop(context);
+                                            refreshPage();
                                           },
                                         ),
                                         FlatButton(
