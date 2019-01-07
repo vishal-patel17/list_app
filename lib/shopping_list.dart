@@ -24,6 +24,7 @@ class _ShoppingListState extends State<ShoppingList> {
   }
 
   String item;
+  String _newvalue;
 
   Future<Null> refreshPage() async {
     await Future.delayed(Duration(seconds: 1));
@@ -64,8 +65,7 @@ class _ShoppingListState extends State<ShoppingList> {
         appBar: AppBar(
           //elevation: 0.1,
           //backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
-          title: Text("${this._count} pending items",
-              style: TextStyle(fontSize: 25.0)),
+          title: Text("${widget.list}", style: TextStyle(fontSize: 25.0)),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -96,7 +96,7 @@ class _ShoppingListState extends State<ShoppingList> {
                             await reference.add({"name": item});
                           });
                           Navigator.of(context).pop();
-                          refreshPage();
+                          //refreshPage();
                         },
                       ),
                       FlatButton(
@@ -154,7 +154,53 @@ class _ShoppingListState extends State<ShoppingList> {
                                   border: new Border(
                                       right: new BorderSide(
                                           width: 1.0, color: Colors.black12))),
-                              child: Icon(Icons.list, color: Colors.black),
+                              child: IconButton(
+                                  icon: Icon(Icons.list),
+                                  color: Colors.black,
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text(
+                                                "Update ${document['name']}"),
+                                            content: TextField(
+                                              decoration: InputDecoration(
+                                                labelText: 'Enter New value',
+                                              ),
+                                              autofocus: true,
+                                              textCapitalization:
+                                                  TextCapitalization.sentences,
+                                              keyboardType: TextInputType.text,
+                                              onChanged: (String value){
+                                                setState(() {
+                                                  this._newvalue = value;
+                                                });
+                                              }
+                                            ),
+                                            actions: <Widget>[
+                                              FlatButton(
+                                                child: Text('Update'),
+                                                onPressed: () {
+                                                  Firestore.instance.runTransaction((transaction) async {
+                                                    await transaction.update(
+                                                        document.reference, <String, dynamic>{'name': this._newvalue});
+                                                  }).then((value){
+                                                    Navigator.of(context).pop();
+                                                  });
+
+                                                },
+                                              ),
+                                              FlatButton(
+                                                child: Text('Cancel'),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        });
+                                  }),
                             ),
                             title: Text(
                               document['name'],
@@ -172,7 +218,7 @@ class _ShoppingListState extends State<ShoppingList> {
                                           widget.user.email + '_' + widget.list)
                                       .document(document.documentID)
                                       .delete();
-                                  refreshPage();
+                                  //refreshPage();
                                 }),
                             onLongPress: () {
                               showDialog(
@@ -193,7 +239,7 @@ class _ShoppingListState extends State<ShoppingList> {
                                                 .delete();
 
                                             Navigator.pop(context);
-                                            refreshPage();
+                                            //refreshPage();
                                           },
                                         ),
                                         FlatButton(
