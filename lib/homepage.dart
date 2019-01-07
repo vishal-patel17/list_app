@@ -58,7 +58,7 @@ class HomePageState extends State<HomePage> {
 
   Future<bool> getGoogleUsername() async {
     bool isGoogleuser = await widget.googleSignIn.isSignedIn();
-    if(isGoogleuser){
+    if (isGoogleuser) {
       setState(() {
         this._userName = widget.googleSignIn.currentUser.displayName;
       });
@@ -457,10 +457,14 @@ class HomePageState extends State<HomePage> {
                                                           widget.user.email +
                                                               '_' +
                                                               document['list'])
-                                                      .document(
-                                                          document.documentID)
-                                                      .delete();
-
+                                                      .getDocuments()
+                                                      .then((snapshot) {
+                                                    for (DocumentSnapshot snapshots
+                                                        in snapshot.documents) {
+                                                      snapshots.reference
+                                                          .delete();
+                                                    }
+                                                  });
                                                   Firestore.instance
                                                       .collection(
                                                           widget.user.email +
@@ -488,17 +492,21 @@ class HomePageState extends State<HomePage> {
                           );
                         }).toList(),
                       )
-                    : Firestore.instance
-                        .collection(widget.user.email + '_list')
-                        .add({
-                        'list': 'Task list',
-                      }).then((value) {
-                        Firestore.instance
-                            .collection(widget.user.email + '_list')
-                            .add({
-                          'list': 'Shopping list',
-                        });
-                      });
+                    : Center(
+                        child:
+                            Text('No List found. Create one and get started!'),
+                      );
+//                    : Firestore.instance
+//                        .collection(widget.user.email + '_list')
+//                        .add({
+//                        'list': 'Task list',
+//                      }).then((value) {
+//                        Firestore.instance
+//                            .collection(widget.user.email + '_list')
+//                            .add({
+//                          'list': 'Shopping list',
+//                        });
+//                      });
             }
           },
         ),
