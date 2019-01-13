@@ -122,101 +122,7 @@ class HomePageState extends State<HomePage> {
     return null;
   }
 
-  void createSharedList(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Enter registered email of the person"),
-            content: TextField(
-              autofocus: true,
-              keyboardType: TextInputType.emailAddress,
-              onChanged: (String value) {
-                setState(() {
-                  this._enteredEmail = value;
-                });
-              },
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Add'),
-                onPressed: () {
-                  if (this.sharedUsersEmailList.contains(this._enteredEmail)) {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text(
-                                "${this._enteredEmail} already shares a list!"),
-                            content:
-                                Text('Please enter another registered email'),
-                            actions: <Widget>[
-                              FlatButton(
-                                child: Icon(Icons.close),
-                                onPressed: () => Navigator.of(context).pop(),
-                              ),
-                            ],
-                          );
-                        });
-                  } else if (this
-                      .registeredUsersEmail
-                      .contains(this._enteredEmail)) {
-                    setState(() {
-                      this._isSharedListCreated = true;
-                    });
-
-                    Firestore.instance.collection('shared_list').add({
-                      'email': this._enteredEmail,
-                    });
-
-                    Firestore.instance.collection('shared_list').add({
-                      'email': widget.user.email,
-                    });
-
-                    Firestore.instance
-                        .collection(widget.user.email + '_shared')
-                        .add({
-                      'email': this._enteredEmail,
-                    });
-
-                    Firestore.instance
-                        .collection(this._enteredEmail + '_shared')
-                        .add({
-                      'email': widget.user.email,
-                    });
-
-                    Firestore.instance.collection(this._enteredEmail).add({
-                      'email': this._enteredEmail,
-                      'shares_with': widget.user.email,
-                    });
-
-                    Navigator.pop(context);
-                    setState(() {
-                      this._isButtonDisabled = true;
-                    });
-                  } else {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text(
-                                "${this._enteredEmail} is not registered!"),
-                            content: Text('Please enter a registered email'),
-                            actions: <Widget>[
-                              FlatButton(
-                                child: Icon(Icons.close),
-                                onPressed: () => Navigator.of(context).pop(),
-                              ),
-                            ],
-                          );
-                        });
-                  }
-                },
-              ),
-            ],
-          );
-        });
-  }
+  void createSharedList(BuildContext context) {}
 
   void deleteSharedList(BuildContext context) {
     showDialog(
@@ -577,69 +483,72 @@ class HomePageState extends State<HomePage> {
                         MaterialPageRoute(
                             builder: (BuildContext context) => GroupChat())),
                   )
-                : null,
+                : FloatingActionButton(
+                    heroTag: 'fbtn_createSharedList',
+                    child: Icon(Icons.add),
+                    onPressed: () => createSharedList(context),
+                    tooltip: 'Create Shared List',
+                  ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
             body: RefreshIndicator(
               onRefresh: refreshPage,
-              child: ListView(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _isButtonDisabled
-                        ? SizedBox(height: 20.0)
-                        : RaisedButton(
-                            child: Text('Create Sharing List'),
-                            onPressed: () => createSharedList(context)),
-                  ),
-                  this._isSharedListCreated
-                      ? ListView(
-                          shrinkWrap: true,
-                          children: <Widget>[
-                            Card(
-                              child: ListTile(
-                                title: Text("Shared Shopping List"),
-                                subtitle: Text("with ${this.sharedUsersEmail}"),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              new GroupShoppingList(
-                                                googleSignIn:
-                                                    this.widget.googleSignIn,
-                                                user: this.widget.user,
-                                                shareEmail:
-                                                    this.sharedUsersEmail,
-                                              )));
-                                },
-                                onLongPress: () => deleteSharedList(context),
-                              ),
-                            ),
-                            SizedBox(height: 10.0),
-                            Card(
-                              child: ListTile(
-                                title: Text("Shared Task List"),
-                                subtitle: Text("with ${this.sharedUsersEmail}"),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (BuildContext context) =>
-                                            new GroupTaskList(
-                                              googleSignIn:
-                                                  this.widget.googleSignIn,
-                                              user: this.widget.user,
-                                              shareEmail: this.sharedUsersEmail,
-                                            ),
-                                      ));
-                                },
-                                onLongPress: () => deleteSharedList(context),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Card(),
-                ],
-              ),
+              child: this._isSharedListCreated
+                  ? ListView(
+                      shrinkWrap: true,
+                      children: <Widget>[
+                        Card(
+                          child: ListTile(
+                            title: Text("Shared Shopping List"),
+                            subtitle: Text("with ${this.sharedUsersEmail}"),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          new GroupShoppingList(
+                                            googleSignIn:
+                                                this.widget.googleSignIn,
+                                            user: this.widget.user,
+                                            shareEmail: this.sharedUsersEmail,
+                                          )));
+                            },
+                            onLongPress: () => deleteSharedList(context),
+                          ),
+                        ),
+                        SizedBox(height: 10.0),
+                        Card(
+                          child: ListTile(
+                            title: Text("Shared Task List"),
+                            subtitle: Text("with ${this.sharedUsersEmail}"),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        new GroupTaskList(
+                                          googleSignIn:
+                                              this.widget.googleSignIn,
+                                          user: this.widget.user,
+                                          shareEmail: this.sharedUsersEmail,
+                                        ),
+                                  ));
+                            },
+                            onLongPress: () => deleteSharedList(context),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Center(
+                          child: Text(
+                              'No Shared List found, Click on add button to get started!'),
+                        ),
+                      ],
+                    ),
             ),
           )
         ]),
