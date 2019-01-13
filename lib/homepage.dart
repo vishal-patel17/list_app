@@ -36,10 +36,12 @@ class HomePageState extends State<HomePage> {
 
   final List<String> registeredUsersEmail = [];
   final List<String> sharedUsersEmailList = [];
+  final _formKey = GlobalKey<FormState>();
   String sharedUsersEmail;
   String _enteredEmail;
   String _newList;
   String _userName;
+  String _listName;
   bool _isSharedListCreated = false;
   bool _isButtonDisabled = false;
 
@@ -122,7 +124,93 @@ class HomePageState extends State<HomePage> {
     return null;
   }
 
-  void createSharedList(BuildContext context) {}
+  TextFormField buildEmailTextField() {
+    return TextFormField(
+      keyboardType: TextInputType.emailAddress,
+      onSaved: (emailInput) => _enteredEmail = emailInput,
+      validator: (emailInput) {
+        if (emailInput.isEmpty) {
+          return 'Please enter an email';
+        }
+        if (!this.registeredUsersEmail.contains(emailInput)) {
+          return 'Please enter only registered email';
+        }
+        Pattern pattern =
+            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+        RegExp regex = new RegExp(pattern);
+        if (!regex.hasMatch(emailInput)) return 'Enter Valid Email';
+      },
+      decoration: InputDecoration(
+        labelText: 'Registered Email Address of the person.',
+        icon: Icon(Icons.mail, color: Colors.grey),
+      ),
+    );
+  }
+
+  Align buildCreateButton(BuildContext context) {
+    return Align(
+      child: SizedBox(
+        height: 50.0,
+        width: 200.0,
+        child: FlatButton(
+          onPressed: () {
+            if (_formKey.currentState.validate()) {
+              _formKey.currentState.save();
+              setState(() {});
+            }
+          },
+          color: Colors.blue,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+          child: Text(
+            'CREATE',
+            style: Theme.of(context).primaryTextTheme.button,
+          ),
+        ),
+      ),
+    );
+  }
+
+  TextFormField buildListnameTextField() {
+    return TextFormField(
+      onSaved: (usernameInput) => _listName = usernameInput,
+      validator: (usernameInput) {
+        if (usernameInput.isEmpty) {
+          return 'Enter List name';
+        }
+      },
+      decoration: InputDecoration(
+          labelText: 'List name', icon: Icon(Icons.list, color: Colors.grey)),
+    );
+  }
+
+  void createSharedList(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Scaffold(
+            body: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    Icon(Icons.group, color: Colors.blue, size: 30.0),
+                    SizedBox(height: 8.0),
+                    buildEmailTextField(),
+                    SizedBox(height: 8.0),
+                    buildListnameTextField(),
+                    SizedBox(height: 20.0),
+                    buildCreateButton(context),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
 
   void deleteSharedList(BuildContext context) {
     showDialog(
