@@ -135,6 +135,9 @@ class HomePageState extends State<HomePage> {
         if (!this.registeredUsersEmail.contains(emailInput)) {
           return 'Please enter only registered email';
         }
+        if (emailInput == widget.user.email) {
+          return 'Please enter other registered email';
+        }
         Pattern pattern =
             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
         RegExp regex = new RegExp(pattern);
@@ -156,7 +159,10 @@ class HomePageState extends State<HomePage> {
           onPressed: () {
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
-              setState(() {});
+              setState(() {
+                this._isSharedListCreated = true;
+              });
+              Navigator.of(context).pop();
             }
           },
           color: Colors.blue,
@@ -199,9 +205,9 @@ class HomePageState extends State<HomePage> {
                   children: <Widget>[
                     Icon(Icons.group, color: Colors.blue, size: 30.0),
                     SizedBox(height: 8.0),
-                    buildEmailTextField(),
-                    SizedBox(height: 8.0),
                     buildListnameTextField(),
+                    SizedBox(height: 20.0),
+                    buildEmailTextField(),
                     SizedBox(height: 20.0),
                     buildCreateButton(context),
                   ],
@@ -577,56 +583,10 @@ class HomePageState extends State<HomePage> {
                     onPressed: () => createSharedList(context),
                     tooltip: 'Create Shared List',
                   ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerFloat,
             body: RefreshIndicator(
               onRefresh: refreshPage,
               child: this._isSharedListCreated
-                  ? ListView(
-                      shrinkWrap: true,
-                      children: <Widget>[
-                        Card(
-                          child: ListTile(
-                            title: Text("Shared Shopping List"),
-                            subtitle: Text("with ${this.sharedUsersEmail}"),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          new GroupShoppingList(
-                                            googleSignIn:
-                                                this.widget.googleSignIn,
-                                            user: this.widget.user,
-                                            shareEmail: this.sharedUsersEmail,
-                                          )));
-                            },
-                            onLongPress: () => deleteSharedList(context),
-                          ),
-                        ),
-                        SizedBox(height: 10.0),
-                        Card(
-                          child: ListTile(
-                            title: Text("Shared Task List"),
-                            subtitle: Text("with ${this.sharedUsersEmail}"),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        new GroupTaskList(
-                                          googleSignIn:
-                                              this.widget.googleSignIn,
-                                          user: this.widget.user,
-                                          shareEmail: this.sharedUsersEmail,
-                                        ),
-                                  ));
-                            },
-                            onLongPress: () => deleteSharedList(context),
-                          ),
-                        ),
-                      ],
-                    )
+                  ? Text('Shared List!')
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.max,
