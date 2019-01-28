@@ -3,8 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flare_flutter/flare_actor.dart";
-import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'package:groovin_material_icons/groovin_material_icons.dart';
+import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 
 import './homepage.dart';
 
@@ -468,38 +467,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Container buildSocialMediaButtons(IconData icon, Color iconColor) {
-    return Container(
-      child: InkWell(
-        onTap: () {
-          if (icon == GroovinMaterialIcons.google) {
-            signIn().then((FirebaseUser user) {
-              setState(() {
-                this.fbUser = user;
-              });
-              Firestore.instance.collection('/users').add({
-                'email': user.email,
-                'uid': user.uid,
-              });
-              routeToHomepage(this.fbUser);
-            }).catchError((e) => print(e));
-          }
-
-          if (icon == GroovinMaterialIcons.facebook) {}
-
-          if (icon == GroovinMaterialIcons.twitter) {}
-        },
-        borderRadius: BorderRadius.circular(30.0),
-        child: Icon(icon, color: iconColor),
-      ),
-      height: 46.0,
-      width: 46.0,
-      decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey, width: 0.5)),
-    );
-  }
-
   Align buildSignUpText() {
     return Align(
       alignment: Alignment.bottomCenter,
@@ -549,8 +516,18 @@ class _LoginPageState extends State<LoginPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              buildSocialMediaButtons(
-                  GroovinMaterialIcons.google, Colors.redAccent),
+              GoogleSignInButton(onPressed: () {
+                signIn().then((FirebaseUser user) {
+                  setState(() {
+                    this.fbUser = user;
+                  });
+                  Firestore.instance.collection('/users').add({
+                    'email': user.email,
+                    'uid': user.uid,
+                  });
+                  routeToHomepage(this.fbUser);
+                }).catchError((e) => print(e));
+              }),
             ],
           ),
         ],
